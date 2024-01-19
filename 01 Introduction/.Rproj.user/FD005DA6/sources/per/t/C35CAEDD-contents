@@ -1,0 +1,156 @@
+---
+title: "Introduction"
+author: "Johannes Signer"
+date: "January 2022"
+output:
+  beamer_presentation:
+    fig_width: 4.5
+    fig_height: 4.5
+    fig_caption: false
+    keep_tex: false
+    pandoc_args: [
+      "--slide-level", "1",
+      "--template", "lib/beamer-goe.tex"]
+toc: false
+---
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_knit$set(root.dir = here::here())
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, 
+  fig.height = 3, dev = "png", cache = FALSE, out.width = "85%", res = 600,
+  comment = "", fig.align = "center")
+options(width = 70, str = strOptions(strict.width = "wrap"))
+theme_set(theme_light()) 
+```
+
+# Welcome!
+
+- Welcome to this online course on animal movement. 
+- We are Brain and Johannes.
+- Who are you?
+
+# Outline of the course
+
+### Day 1:
+- Introduction and exploratory data analysis for movement data (J)
+- Quantifying space use of animals with home ranges (B)
+
+### Day 2:
+- Continuous time movement models (B)
+- Identifying different behavioral states in movement data (J)
+
+### Day 3:
+- Introduction to habitat selection (B)
+- Integrated step selection functions 1 (J)
+
+----
+
+### Day 4:
+- Integrated step selection functions 2 (B)
+- Strategies to model multiple animals (J) 
+
+### Day 5:
+- Validation of models for habitat selection (B)
+- Simulations from fitted iSSF (J)
+
+--- 
+
+## Some logistics
+
+- The course is scheduled from Monday (24th of Jan) to Friday (28th of Jan) from 2pm to 8pm Berlin time (that is UTC+2). 
+
+- We split these 6h block into two chunks: 
+  - 2pm - 4:45pm and 5:15pm to 8pm
+  - Each chunk will consists of 
+    - a short lecture
+    - an R walkthrough
+    - an exercise
+    - discussion of the exercise
+    
+- Lectures will be held via zoom.
+- During the whole workshop we have a slack channel where you ask questions (we will monitor it during the course).
+
+# Analysis of movement data in R; Why R? The  `amt` package.
+
+# Some conventions in R
+
+- `%>%` or `|>`: Pipes the output of one function to a next function. We will discuss this further later on. 
+- `::` to access a name space form a package. 
+- use of \`a\`. 
+- `.` means this directory
+- `..` refers to the parent directory
+
+----
+
+- We often use `here::here("path to a file")`, when reading in a file. 
+- The first `here` calls the function `here()` from the package `here`. 
+- The function `here()` dynamically creates the absolute path to the project root. 
+
+```{r}
+here::here()
+```
+
+This means, that we save all our data in the root directory data (even though my scripts are in different sub directories). 
+
+----
+
+### Brackets (`(`, `[`, `{`)
+
+- round brackets or parentheses (`(`) usually indicate functions or are used in arithmetic calculations. 
+
+```{r}
+sqrt(3)
+```
+
+or 
+
+```{r}
+2 * (3 + 1)
+```
+
+---
+
+- square brackets (`[`, `[[`) are used to subset data structures. 
+
+```{r}
+letters[1:3]
+```
+
+or 
+
+```{r}
+head(iris[["Species"]])
+```
+
+
+-----
+
+- curly brackets or braces (`{`) are used to form code blocks (e.g., inside a function or control structure). 
+
+
+```{r, eval = FALSE}
+for (i in 1:10) {
+  i^2
+} 
+
+```
+
+# Recommended setup
+
+
+# Tracks and bursts: the basic building block
+
+# CRS a very brief review
+
+# Sampling rates, and resampling
+
+# Detecting outliers
+
+# Movement characteristics (sl_, ta_)
+
+# Time of the day
+
+# Dealing with multiple animals
