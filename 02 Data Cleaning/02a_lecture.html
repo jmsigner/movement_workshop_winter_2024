@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Data Cleaning</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Brian J. Smith" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="../css/default.css" type="text/css" />
+    <link rel="stylesheet" href="../css/default-fonts.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+
+
+
+class: center, middle, inverse
+
+# Data Cleaning
+
+Brian J. Smith  
+13 March 2023
+
+*Analysis of Animal Movement Data in R*  
+J. Signer &amp; B. Smith  
+
+---
+
+# Outline
+
+- Collecting GPS Data
+
+- Cleaning GPS Data
+
+- Other Data Types
+
+---
+class: center, middle
+
+# Collecting GPS Data
+
+---
+
+## How does GPS work?
+
+.center[(Watch this during lecture)]
+
+.center[https://youtu.be/FU_pY2sTwTA]
+
+---
+
+## How does GPS work?
+
+- Satellites broadcast the time
+- Device compares with current time to calculate distance
+- Uses trilateration to calculate location
+- Requires an extra satellite to correct time drift
+
+---
+name: gps_data
+
+## Collecting GPS Data
+
+---
+template: gps_data
+
+| collar_ID | x | y | t      | n_satellite | DOP |
+|-----------|---|---|--------|-------------|-----|
+| 123       |...|...|12:01:23| 6           | 5.5 |
+
+---
+template: gps_data
+
+| collar_ID | x | y | t      | n_satellite | DOP |
+|-----------|---|---|--------|-------------|-----|
+| 123       |...|...|12:01:23| 6           | 5.5 |
+| 123       |...|...|13:01:17| 5           | 7   |
+
+---
+template: gps_data
+
+| collar_ID | x | y | t      | n_satellite | DOP |
+|-----------|---|---|--------|-------------|-----|
+| 123       |...|...|12:01:23| 6           | 5.5 |
+| 123       |...|...|13:01:17| 5           | 7   |
+| 123       |...|...|14:01:21| 6           | 7   |
+
+---
+template: gps_data
+
+| collar_ID | x | y | t      | n_satellite | DOP |
+|-----------|---|---|--------|-------------|-----|
+| 123       |...|...|12:01:23| 6           | 5.5 |
+| 123       |...|...|13:01:17| 5           | 7   |
+| 123       |...|...|14:01:21| 6           | 7   |
+| 123       |...|...|14:01:19| 7           | 4   |
+
+---
+template: gps_data
+
+| collar_ID | x | y | t      | n_satellite | DOP |
+|-----------|---|---|--------|-------------|-----|
+| 123       |...|...|12:01:23| 6           | 5.5 |
+| 123       |...|...|13:01:17| 5           | 7   |
+| 123       |...|...|14:01:21| 6           | 7   |
+| 123       |...|...|14:01:19| 7           | 4   |
+| 123       |-- |-- |15:01:30| 0           | --  |
+
+---
+template: gps_data
+
+| collar_ID | x | y | t      | n_satellite | DOP |
+|-----------|---|---|--------|-------------|-----|
+| 123       |...|...|12:01:23| 6           | 5.5 |
+| 123       |...|...|13:01:17| 5           | 7   |
+| 123       |...|...|14:01:21| 6           | 7   |
+| 123       |...|...|14:01:19| 7           | 4   |
+| 123       |-- |-- |15:01:30| 0           | --  |
+| 123       |...|...|16:01:27| 4           | 8   |
+
+---
+
+## Dilution of Precision (DOP)
+
+
+.center[(Watch these later)]
+
+
+.center[https://youtu.be/nAkudf45Y10]
+
+.center[https://youtu.be/h1jXqTRto1Q]
+
+---
+
+## Dilution of Precision (DOP)
+
+.center[Measure of potential loss of precision due to satellite geometry]
+- PDOP
+  - Position parameters (lat, lon, alt)  
+- HDOP
+  - Horizontal parameters (lat, lon)  
+- VDOP
+  - Vertical parameter (alt)  
+- TDOP
+  - Time parameter (time correction)
+    
+---
+
+## Dilution of Precision (DOP)
+
+.center[Lower is better!]
+
+### Rough guidelines (by BJS):
+
+- 1--2: Excellent
+- 2--4: Very Good
+- 4--6: Good
+- 6--8: Fair (I typically filter these for elk)
+- 8--10: Poor
+- \&gt;10: Very poor
+
+---
+
+## Missing fixes
+
+- Small % of **random** missing fixes are typically not a problem
+
+- Many causes of missing fixes are **non-random**
+  - *e.g.*, dense canopy creates habitat-biased missing fixes
+  
+- Some discussion of this in the literature
+  - Frair et al. (2010)
+  - Smith et al. (2018)
+  
+---
+
+## Missing fixes
+
+.pull-left[![Burmese python](figs/python_tag.png)]
+
+.pull-right[![Python GPS tag](figs/python.png)]
+
+---
+background-image:url("figs/A02_bias.png")
+
+---
+background-image:url("figs/A02_bias.png")
+class:center, middle
+
+&lt;span style = "color:red; font-size:48pt; font-weight:bold; background-color:#FFFFFF90"&gt;BEWARE!&lt;/span&gt;
+
+---
+class:center, middle
+
+# Cleaning GPS Data
+
+---
+
+## Methods for Cleaning
+
+- By hand
+
+- Scripted routine (Bjørneraas et al. 2010)
+
+- `amt` workflow (NEW!)
+
+---
+
+## `amt` Workflow
+
+- General cleaning framework largely developed by Tal Avgar. 
+
+- Vignette in preparation.
+
+- Very few users! We welcome feedback on bugs or other suggestions.
+
+---
+name: amt-workflow
+## `amt` Workflow
+
+--
+1. Remove fixes before the device was on the animal
+
+--
+2. Remove fixes influenced by the capture
+
+--
+3. Remove locations in unreachable habitat
+
+--
+4. Filter low quality fixes
+
+--
+5. Flag low quality duplicates
+
+--
+6. Flag unreasonably fast steps
+
+--
+7. Flag fast roundtrips
+
+--
+8. Flag mortality/drop-off clusters
+
+---
+
+### 1. Remove fixes before the device was on the animal
+
+Pretty straightforward.
+
+```
+trk %&gt;%
+  tracked_from_to(from = ymd_hms("2021-01-01 07:00:00"), 
+                  to = ymd_hms("2021-12-31 19:00:00"))
+```
+
+---
+
+### 2. Remove fixes influenced by the capture
+
+Define a time period to remove from the beginning of the track.
+
+```
+trk %&gt;%
+  remove_capture_effect(start = days(2))
+```
+
+Used to clean post-capture behavior modifications.
+
+---
+
+### 3. Remove locations in unreachable habitat
+
+No specific function. `amt::extract_covariates()` will help attach a covariate of your choice, and then simply use `dplyr::filter()` to remove unwanted values.
+
+```
+trk %&gt;% 
+  extract_covariates(landuse) %&gt;% 
+  filter(!landuse %in% 11:12)
+```
+
+*E.g.*, terrestrial animals in the ocean, fish on land, etc.
+
+---
+
+### 4. Filter low quality fixes
+
+No specific function. Simply use `dplyr::filter()` to remove precision values below a desired threshold.
+
+```
+trk %&gt;% 
+  filter(dop &lt; 10)
+```
+---
+
+### 5. Flag low quality duplicates
+
+Define a time window of size `\(\gamma\)`. Treat any two fixes within `\(\pm \gamma/2\)` as duplicates. Keep only the record with the better (lower) precision metric.
+
+```
+trk %&gt;% 
+  flag_duplicates(gamma = minutes(5), DOP = "dop")
+```
+
+*Note* that if you are using a metric where bigger is better (*e.g.*, number of satellites instead of DOP), multiply it by -1 first.
+
+*Also note* that this function *flags* rather than *filters* locations. To filter:
+
+```
+trk %&gt;% 
+  flag_duplicates(gamma = minutes(5), DOP = "dop") %&gt;% 
+  filter(!duplicate_)
+```
+
+---
+
+### 6. Flag unreasonably fast steps
+
+*This is where things get tricky.*
+
+You will likely not have perfectly regular timesteps by this point.
+
+You might think you should calculate "speed" as `\(\Delta p / \Delta t\)`, but that implies that distance scales *linearly* with time.
+
+Briefly, displacement (under a random walk) *does not* scale linearly with time, but rather **squared** displacement *does* scale linearly with time.
+
+Solution: use squared displacement rate to define "fast steps".
+
+See `?amt::calculate_sdr` and `?amt::get_displacement`.
+
+---
+
+### 6. Flag unreasonably fast steps
+
+Choose an SDR, `\(\delta\)`, so that steps with `\(SDR &gt; \delta\)` are flagged.
+
+Units are assumed to be `\(m^2/s\)`.
+
+```
+trk %&gt;% 
+  flag_fast_steps(delta = 10000)
+```
+
+Note that this does not remove those steps automatically.
+
+```
+trk %&gt;% 
+  flag_fast_steps(delta = 10000) %&gt;% 
+  filter(!fast_step_)
+```
+*E.g.,* 10000 `\(m^2/s\)` implies a displacement of 6 km in 1 hour but only 8.5 km in 2 hours.
+
+---
+
+### 7. Flag fast roundtrips
+
+It is more likely that a single location is imprecise if it implies an unrealistically fast out-and-back round trip. In that case, the user might be willing to scale the threshold SDR.
+
+`\(\delta\)` gives the base SDR and `\(\epsilon\)` is the scaling factor.
+
+---
+
+.pull-left[![SDR Figure](figs/sdr_de.png)]
+
+.pull-right[Position at time `\(t\)` is flagged if:
+
+- `\(SDR_1 &gt; \delta/\epsilon\)` and `\(SDR_2 &gt; \delta/\epsilon\)`
+
+- `\(SDR_1 &gt; \epsilon SDR_3\)` and `\(SDR_2 &gt; \epsilon SDR_3\)` 
+
+*Note* that `\(\epsilon\)` both decreases `\(\delta\)` and increases `\(SDR_3\)`.
+
+]
+
+---
+
+### 7. Flag fast roundtrips
+
+```
+trk %&gt;% 
+  flag_roundtrips(delta = 10000, epsilon = 5)
+```
+
+This function does not remove locations.
+
+```
+trk %&gt;% 
+  flag_roundtrips(delta = 10000, epsilon = 5) %&gt;% 
+  filter(!fast_roundtrip_)
+```
+
+---
+
+### 8. Flag mortality/drop-off clusters
+
+If an animal with an active collar dies OR an active collar drops off the animal, we often don't know exactly when the last valid location was.
+
+![Animal mortality](figs/mort.png)
+
+---
+
+### 8. Flag mortality/drop-off clusters
+
+We define defunct clusters as those with no movement at the end of a track, with these parameters:
+
+- `\(\zeta\)`: the tolerance for steps to be considered of length 0
+    - (*e.g.*, `\(\zeta = 5\)` allows all points within 5 m to be considered stationary)
+    
+- `\(\eta\)`: the minimum number of consecutive stationary points to form a cluster
+
+- `\(\theta\)`: the minimum amount of time elapsed to form a cluster
+
+```
+trk %&gt;% 
+  flag_defunct_clusters(zeta = 10, eta = 5, theta = hours(24)) %&gt;% 
+  # Remove flagged clusters
+  filter(!defunct_cluster_)
+```
+
+---
+class: center, middle
+
+# Other Data Types
+
+---
+
+## ARGOS Satellite Tags
+
+- Data are labelled with a location class rather than DOP.
+
+- Error distributions are well studied for each location class (bivariate t-distributions).
+
+- Often modeled with an SSM (*e.g.*, Jonsen et al. 2005).
+  - Implemented in R package `bsam` (https://github.com/ianjonsen/bsam).
+
+---
+
+## Passive Acoustic Telemetry
+
+- Acoustic signals are more easily corrupted than electromagnetic waves, resulting in the wrong tag ID being recorded.
+
+  - Type A false detections are of tag IDs not in the study (easy to discard)
+  - Type B false detections are of tag IDs in the study (hard to distinguish from real data)
+  
+- Some work on this in the literature (*e.g.*, Simpfendorfer et al. 2015).
+  - Most rely on a speed filter (use SDR!) or coarse temporal scale summary stats.
+
+- See also R package `glatos` (https://gitlab.oceantrack.org/GreatLakes/glatos).
+
+---
+
+
+class: center, middle
+
+# Questions?
+
+---
+
+class: small-font
+
+# References
+
+
+&lt;a name=bib-bjorneraas_screening_2010&gt;&lt;/a&gt;[Bjørneraas, K., B. Moorter,
+C. M. Rolandsen, et al.](#cite-bjorneraas_screening_2010) (2010).
+"Screening Global Positioning System Location Data for Errors Using
+Animal Movement Characteristics". En. In: _The Journal of Wildlife
+Management_ 74.6, pp. 1361-1366. DOI:
+[10.1111/j.1937-2817.2010.tb01258.x](https://doi.org/10.1111%2Fj.1937-2817.2010.tb01258.x).
+
+&lt;a name=bib-Frair2010&gt;&lt;/a&gt;[Frair, J. L., J. R. Fieberg, M. Hebblewhite,
+et al.](#cite-Frair2010) (2010). "Resolving issues of imprecise and
+habitat-biased locations in ecological analyses using GPS telemetry
+data". In: _Philosophical Transactions of the Royal Society
+B-Biological Sciences_ 365.1550. ISBN: 0962-8436, pp. 2187-2200. DOI:
+[10.1098/rstb.2010.0084](https://doi.org/10.1098%2Frstb.2010.0084).
+
+&lt;a name=bib-Jonsen2005&gt;&lt;/a&gt;[Jonsen, I. D., J. M. Flemming, and R. A.
+Myers](#cite-Jonsen2005) (2005). "Robust state-space modeling of animal
+movement data". In: _Ecology_ 86.11. ISBN: 0012-9658, pp. 2874-2880.
+DOI: [10.1890/04-1852](https://doi.org/10.1890%2F04-1852).
+
+&lt;a name=bib-simpfendorfer_ghosts_2015&gt;&lt;/a&gt;[Simpfendorfer, C. A., C.
+Huveneers, A. Steckenreuter, et al.](#cite-simpfendorfer_ghosts_2015)
+(2015). "Ghosts in the data: false detections in VEMCO pulse position
+modulation acoustic telemetry monitoring equipment". En. In: _Animal
+Biotelemetry_ 3.1, p. 55. DOI:
+[10.1186/s40317-015-0094-z](https://doi.org/10.1186%2Fs40317-015-0094-z).
+(Visited on Nov. 13, 2022).
+
+&lt;a name=bib-Smith2018&gt;&lt;/a&gt;[Smith, B. J., K. M. Hart, F. J. Mazzotti, et
+al.](#cite-Smith2018) (2018). "Evaluating GPS biologging technology for
+studying spatial ecology of large constricting snakes". In: _Animal
+Biotelemetry_ 6, p. 1. DOI:
+[10.1186/s40317-018-0145-3](https://doi.org/10.1186%2Fs40317-018-0145-3).
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

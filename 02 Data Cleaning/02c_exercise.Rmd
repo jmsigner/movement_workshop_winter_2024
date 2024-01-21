@@ -1,0 +1,38 @@
+---
+title: "Data Cleaning Exercise"
+author: "Brian J. Smith"
+date: "22 January 2024"
+output: 
+  html_document:
+    theme: default
+    css: "../css/exercises.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+Let's apply what we've learned about data cleaning. Refer to the lecture slides (<a href="02a_lecture.html" target="_blank" rel="noopener noreferrer">02a_lecture.html</a>) and the walkthrough code (`02b_walkthrough.R`) as a refresher.
+
+We encourage you to use your own data for this exercise. We will be available while you are working to answer any questions.
+
+If you don't have your own data, you can use example data built into `amt`. You can access the fisher data like this:
+
+```{r amt_fisher, eval = FALSE}
+# Load `amt`
+library(amt)
+
+# Location data as 'track_xyt'
+dat <- amt_fisher
+
+```
+
+You likely have more than one individual in your own data, and `amt_fisher` also has 4 individuals. Subset to just one individual for this (I recommend "Ricky T").
+
+## Instructions
+
+1. Load in your data or the `amt_fisher` dataset. If you're working with your own data, format it as a `track_xyt` object using `amt::make_track()`.
+  
+2. Clean these data! For the `amt_fisher` data, you can assume the data only cover the deployment, so you can ignore step 1 and step 8. You decide whether you think there is a capture effect in the data! Justify why you chose the cleaning parameters that you do.
