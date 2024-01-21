@@ -230,4 +230,5 @@ leroy2 %>% time_of_day() %>% count(tod_)
 
 leroy2 %>% steps_by_burst() %>% time_of_day(where = "both")
 
+# For more information
 ?suncalc::getSunlightTimes
