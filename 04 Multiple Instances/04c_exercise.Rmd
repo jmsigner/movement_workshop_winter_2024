@@ -1,0 +1,33 @@
+---
+title: "Multiple Instances"
+author: "Johannes Signer"
+date: "23rd of January 2024"
+output: 
+  html_document:
+    theme: default
+    css: "../css/exercises.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+Let's apply what we've learned about exploratory data analysis. Refer to the lecture slides (`04a_lecture.pdf`) and the walkthrough code (`04b_walkthrough.R`) as a refresher.
+
+We encourage you to use your own data for this exercise. We will be available while you are working to answer any questions.
+
+If you don't have your own data, you can use example data set of collard elephants, that was published by Wall et al. 2014 [here](https://www.datarepository.movebank.org/handle/10255/move.372). We already downloaded the data and stored in `data/elephants.csv`. 
+
+
+## Instructions
+
+1. Read the data set `data/elephants.csv` (note file paths always start globally). Create a track using, make sure that you set the CRS to 4326. Ensure that the timezone is "GMT". 
+
+2. Transform the track to a projected UTM CRS. You can use EPSG 32630 (https://epsg.io/32630) and filter only for one individual and year.
+
+3. Our working hypothesis is that home-range size is a function of the mean weekly temperature^[If you use your own data, you may want to test for a different covariate]. To test this calculate weekly^[The function `week()` from the `lubridate` package might be useful.] home-range sizes^[Choose a home-range estimator that you like.] and compare the home-range size numerically or graphically to the mean weekly temperature. What do you conclude?
+
+
+

@@ -1,0 +1,403 @@
+---
+title: "Working with multiple instances"
+author: "Johannes Signer"
+date: "January 2024"
+output:
+  beamer_presentation:
+    fig_width: 4.5
+    fig_height: 4.5
+    fig_caption: false
+    keep_tex: true
+    pandoc_args: [
+      "--slide-level", "1",
+      "--template", "../lib/beamer-goe.tex"]
+toc: false
+---
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_knit$set(root.dir = here::here("04 Multiple Instances"))
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, 
+  fig.height = 3, dev = "png", cache = FALSE, out.width = "85%", res = 600,
+  comment = "", fig.align = "center")
+options(width = 70, str = strOptions(strict.width = "wrap"))
+theme_set(theme_light()) 
+```
+
+# Motivation
+
+- Most telemetry studies deal with more than one animal. 
+- Dealing with multiple animals can complicate analyses significantly. 
+- Some packages provide an infrastructure to deal with multiple animals (e.g. `adehabitat`, `move`). 
+- `amt` has very limited support for dealing with multiple animals, but relies on the infrastructure provided by the `purrr` package. The hope is, that this adds additional flexibility. 
+
+# Examples
+
+- Weekly home-range size of bears. 
+- Does home-range size differ between different sexes, treatments?
+- Individual-level habitat selection?
+- What is the mean step length for different animals during day and night?
+
+# Repeating tasks in R
+
+
+Three possible ways to deal with multiple instances in R: 
+
+1. Copy and paste your code and make slight adaptions (**don't do this**).
+2. Use a `for`-loop
+3. Use functional programming
+
+----
+
+Let's consider the following problem: We want to calculate the mean step length of each fisher from the `amt_fisher` data set:
+
+```{r}
+library(amt)
+data(amt_fisher)
+unique(amt_fisher$name)
+```
+
+
+------
+
+For the first animal `Leroy`^[Note, I am ignoring sampling rates here.]
+
+```{r}
+amt_fisher |> filter(name == "Leroy") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+```
+
+----
+
+Now we could do the same for the other three individuals: 
+
+```{r}
+amt_fisher |> filter(name == "Ricky T") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+amt_fisher |> filter(name == "Lupe") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+amt_fisher |> filter(name == "Lucile") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+```
+
+----
+
+- We would also need an other vector to save the results.
+
+- While this approach might be OK for only a few individuals, it becomes very tedious for many animals or if you would like to add an additional grouping factor (say, we would also want to calculate the mean step for each day).
+
+- `for`-loops can be useful here. 
+
+----
+
+Note, only the name of the animal changes 
+
+```{r}
+amt_fisher |> filter(name == "Ricky T") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+amt_fisher |> filter(name == "Lupe") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+amt_fisher |> filter(name == "Lucile") |> 
+  step_lengths() |> mean(na.rm = TRUE)
+```
+
+-----
+
+We could use a variable to store the name of animal currently under evaluation, for example `i`:
+
+```{r}
+i <- "Ricky T"
+amt_fisher |> filter(name == i) |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+i <- "Lupe"
+amt_fisher |> filter(name == i) |> 
+  step_lengths() |> mean(na.rm = TRUE)
+
+i <- "Lucile"
+amt_fisher |> filter(name == i) |> 
+  step_lengths() |> mean(na.rm = TRUE)
+```
+
+------
+
+- `i` takes the name of the animal that is currently under evaluation.  Once the code block is executed, `i` is updated to the next name.
+- Everything else is the **same**.
+
+A `for`-loop has one variable, that changes for each go. 
+
+```{r, eval = FALSE}
+for (i in c("Leroy", "Ricky T", "Lupe", "Lucile")) {
+  # Do something
+}
+```
+
+The body of the looped (everything between `{ ` and `}`) is executed **four** times. Each time the value of `i` changes.
+
+-----
+
+We can use such a loop to calculate the mean step length for each animal: 
+
+```{r}
+for (i in c("Leroy", "Ricky T", "Lupe", "Lucile")) {
+  amt_fisher |> filter(name == i) |> 
+    step_lengths() |> mean(na.rm = TRUE)
+}
+```
+
+----
+
+Finally, we have to take care of the results and save them in a new variable, which I called `res` here.
+
+```{r}
+res <- c()
+j <- 1
+for (i in c("Leroy", "Ricky T", "Lupe", "Lucile")) {
+  res[j] <- amt_fisher |> filter(name == i) |> 
+    step_lengths() |> mean(na.rm = TRUE)
+  j <- j + 1
+}
+```
+
+----
+
+- `for`-loops are a significant improvement compared to approach #1. 
+- However, `for`-loops *can* become a bit tedious if we have multiple grouping instances (e.g., multiple animals for multiple years). We potentially need nested `for`-loops.
+
+
+# A slightly deeper look at R
+
+## What is a `tibbles`?
+
+- `tibbles` are *modern* `data.frame`s. 
+- A tibble can have list columns.
+- A list is an other data structure in R, that can hold any other data structure. 
+
+With list columns it is easy to have more complex splits of your data (e.g., animals/seasons/weeks). 
+
+-----
+
+## What is a list?
+
+Lists are yet an other data structures for R. Lists are can contain any object (even other lists). 
+
+
+```{r}
+l <- list("a", b = 1:10, x = list(list(1:10)))
+str(l)
+```
+
+-----
+
+## Examples for lists
+
+```{r}
+x <- list(a = 1:3, b = list(1:3))
+x[[1]]
+x$a
+x[["b"]]
+```
+
+# Functional programming in R
+
+## What is functional programming?
+
+> Simply put, FP is exactly what it sounds like. If you are doing something more than once, it belongs in a function. In FP, functions are the primary method with which you should carry out tasks. All actions are just (often creative) implementations of functions you’ve written. [towardsdatascience.com](https://towardsdatascience.com/cleaner-r-code-with-functional-programming-adc37931ef7a)
+
+----
+
+## The `apply`-family
+
+These functions apply a function on a `matrix`, `vector` or `list`. 
+
+For matrices:
+
+- `apply()` (we won't cover this here in more detail)
+
+For vectors and lists
+
+- `lapply()`
+- `sapply()`
+
+----
+
+## `lapply()`
+
+`lapply()` applies a function to each element of a list (or a vector) and returns list, then `lapply` can be used.
+
+```{r}
+l <- list(1:3, 2)
+lapply(l, length)
+```
+
+-----
+
+We could achieve the same with a `for`-loop:
+
+```{r}
+res <- list()
+for (i in 1:2) {
+  res[[i]] <- length(l[[i]])
+}
+
+```
+
+
+-----
+
+Here it would make more sense to use `sapply` (R will try to simplify the data structure of the result).
+
+```{r}
+sapply(l, length)
+```
+
+------
+
+Note, we used the shortest possible way, it is also possible to explicitly work with the object the function is applied to.
+
+```{r}
+sapply(l, function(x) length(x))
+```
+
+Since `length` only uses one argument (here `x`), we do not have to explicitly call the function. 
+
+This can be shorted (since R 4.1) to 
+
+```{r}
+sapply(l, \(x) length(x))
+```
+
+------
+
+The `purrr` package provides a more type-stable way to `*apply()` functions. These are called `map_*()`.
+
+- `lapply()` -> `map()`
+- `sapply()` -> `map_*()`
+    - `map_lgl()` for logical values
+    - `map_dbl()` for doubles
+    - `map_int()` for integers
+    - `map_chr()` for text
+
+In addition there variants of all `map*()` functions that take two inputs (`map2_*()`) and many inputs (`pmap_*()`).
+
+------
+
+```{r}
+library(purrr)
+map(l, length)
+```
+
+Better 
+
+```{r}
+map_int(l, length)
+```
+
+-----------
+
+Again, it is possible to access the object directly. This can be done as before with `function(<var>)`, `\(x)` or `~`. When using `~` the object currently under evaluation can be accessed with `.` or `.x`.
+
+```{r}
+map_int(l, function(x) length(x))
+map_int(l, ~ length(.))
+map_int(l, ~ length(.x))
+```
+
+
+----------
+
+An example for `map2_*`:
+
+```{r}
+a <- 1:4
+b <- 4:1
+
+map2_dbl(a, b, ~ .x + .y)
+
+```
+
+# Nest and unnest
+
+An example data set
+
+```{r}
+set.seed(12)
+dat <- data.frame(
+  id = rep(1:10, each = 10), 
+  x = runif(100), 
+  y = runif(100)
+)
+```
+
+--------
+
+We can use `nest` and `unnest` to create so called `list`-columns.
+
+```{r}
+dat |> nest(data = c(x, y))
+```
+
+
+------------
+
+```{r}
+dat |> nest(data = -id)
+```
+
+
+-------
+
+
+We can then work on the nested column(s), using `mutate` in combination with `map_*`:
+
+```{r}
+dat |> nest(data = -id) |> 
+  mutate(centroid.x = map_dbl(data, ~ mean(.x$x)))
+```
+
+-----
+
+### Lets come back to our example
+
+First, lets use `nest()`:
+
+```{r}
+amt_fisher |> nest(data = -name)
+```
+
+-----
+
+Now we can iterate over all animals
+
+```{r}
+amt_fisher |> nest(data = -name) |> 
+  mutate(mean.sl = map_dbl(data, ~ step_lengths(.x) |> 
+                             mean(na.rm = TRUE)))
+```
+
+-----
+
+The approach of list-columns makes it easy to have several grouping instances. 
+
+```{r}
+amt_fisher |> mutate(wk = lubridate::week(t_)) |> 
+  nest(data = -c(name, wk)) |> 
+  mutate(mean.sl = map_dbl(data, ~ step_lengths(.x) |> 
+                             mean(na.rm = TRUE)))
+```
+
+
+# Take-home messages
+
+1. Available data structures can be used to deal with multiple animals. 
+2. Lists are just  "containers" that contain objects. 
+3. List columns are a great way to organize complex data structures.
+
+

@@ -1,0 +1,1034 @@
+\documentclass[ignorenonframetext,,t]{beamer}
+
+\usepackage{listings}
+
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{: }
+\setbeamercolor{caption name}{fg=normal text.fg}
+\setbeamerfont{caption}{size=\tiny, shape=\itshape}
+\beamertemplatenavigationsymbolsempty
+
+
+  \usepackage{lmodern}
+
+
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{eurosym}
+
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+\fi
+
+\defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+
+
+
+
+
+
+\fi
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Font sizes
+%\usefonttheme[stillsansseriflarge]{serif}
+\setbeamerfont{frametitle}{series=\bfseries}
+\setbeamerfont{title}{series=\bfseries,size=\Large}
+\setbeamerfont{subtitle}{size=\small}
+
+
+% Color
+\usepackage{color}
+\definecolor{spamwell}{RGB}{0,126,63}
+\setbeamercolor{frametitle}{fg=spamwell,bg=spamwell!20}
+\setbeamercolor{title}{fg=spamwell,bg=spamwell!20}
+\setbeamercolor{structure}{fg=spamwell}
+\setbeamercolor{alerted text}{fg=spamwell}
+%\setbeamercolor{bibliography entry author}{fg=red!20}
+
+\hypersetup{
+  colorlinks,
+  allcolors=spamwell!80}
+
+% Title graphic
+\titlegraphic{\includegraphics[width=2cm]{~/ownCloud/img/logo-uni}\hspace{1cm}\includegraphics[width=2cm]{~/ownCloud/img/logo-abteilung}}
+
+% Itemize list
+\setbeamertemplate{itemize items}[circle]
+
+\let\oldtextbf\textbf
+\renewcommand{\textbf}[1]{\textcolor{spamwell}{\oldtextbf{#1}}}
+
+
+\usepackage{pgf}
+
+% Booktabs
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+
+% Section
+
+
+% Footline
+\setbeamercolor{footlinecolor}{fg=spamwell, bg=spamwell!20}
+
+\setbeamertemplate{footline}{%
+  \begin{beamercolorbox}[sep=1em,wd=\paperwidth,leftskip=0.2cm,rightskip=0.2cm]{footlinecolor}
+    \hspace{0.01cm}%
+    %Johannes Signer (jsigner@gwdg.de)\hfill\insertframenumber/\inserttotalframenumber
+    Johannes Signer (jsigner@uni-goettingen.de)\hfill\insertframenumber
+  \end{beamercolorbox}%
+}
+
+\setbeamertemplate{navigation symbols}{}
+
+% Verbatim
+\usepackage{xcolor, url}
+\definecolor{dark-gray}{gray}{0.30}
+\makeatletter
+\renewcommand\verbatim@font{\footnotesize\color{dark-gray}\normalfont\ttfamily}
+\makeatletter
+
+% tight list
+
+\providecommand{\tightlist}{%
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+
+
+\usepackage{copyrightbox}
+
+\newif\ifbibliography
+
+
+
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+
+
+
+
+% Prevent slide breaks in the middle of a paragraph:
+\widowpenalties 1 10000
+\raggedbottom
+
+\AtBeginPart{
+\let\insertpartnumber\relax
+\let\partname\relax
+\frame{\partpage}
+}
+
+% Thanks to http://tex.stackexchange.com/questions/178800/creating-sections-each-with-title-pages-in-beamers-slides
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+  \centering
+  \begin{beamercolorbox}[sep=8pt,center,shadow=true,rounded=false]{title}
+    \usebeamerfont{title}\insertsectionhead\par%
+  \end{beamercolorbox}
+  \vfill
+%  \tableofcontents[currentsection]
+  \end{frame}
+}
+
+
+
+\AtBeginSubsection{
+\let\insertsubsectionnumber\relax
+\let\subsectionname\relax
+\frame{\subsectionpage}
+}
+
+
+% Block titles
+
+%\setbeamertemplate{blocktitle}{%
+%    \usebeamerfont{blocktitle}\insertblocktitle%
+%    \vphantom{g}% To avoid fluctuations per frame
+%    %\hrule% Uncomment to see desired effect, without a full-width hrule
+%    \makebox[\linewidth][l]{\rule{\paperwidth}{0.4pt}}%
+%}
+% https://tex.stackexchange.com/questions/524621/customize-beamer-block-environment-underline-block-title
+\addtobeamertemplate{block begin}{%
+    \let\oldinsertblocktitle\insertblocktitle%
+    \def\insertblocktitle{\underline{\oldinsertblocktitle}}%
+}{}
+
+
+
+
+
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+\setcounter{secnumdepth}{0}
+
+
+%  itemsep for lists: https://stackoverflow.com/questions/58318568/how-to-increase-distance-between-bullet-points-in-r-markdown
+\renewcommand{\tightlist}{\setlength{\itemsep}{1.4ex}\setlength{\parskip}{0pt}}
+
+
+% footnotesize
+\setbeamerfont{footnote}{size=\tiny}
+
+% title
+\title{Working with multiple instances}
+
+
+\author{Johannes Signer}
+
+
+\date{January 2024}
+
+\begin{document}
+\frame{\titlepage}
+
+
+
+\begin{frame}[fragile]{Motivation}
+\protect\hypertarget{motivation}{}
+\begin{itemize}
+\tightlist
+\item
+  Most telemetry studies deal with more than one animal.
+\item
+  Dealing with multiple animals can complicate analyses significantly.
+\item
+  Some packages provide an infrastructure to deal with multiple animals
+  (e.g.~\texttt{adehabitat}, \texttt{move}).
+\item
+  \texttt{amt} has very limited support for dealing with multiple
+  animals, but relies on the infrastructure provided by the
+  \texttt{purrr} package. The hope is, that this adds additional
+  flexibility.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Examples}
+\protect\hypertarget{examples}{}
+\begin{itemize}
+\tightlist
+\item
+  Weekly home-range size of bears.
+\item
+  Does home-range size differ between different sexes, treatments?
+\item
+  Individual-level habitat selection?
+\item
+  What is the mean step length for different animals during day and
+  night?
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Repeating tasks in R}
+\protect\hypertarget{repeating-tasks-in-r}{}
+Three possible ways to deal with multiple instances in R:
+
+\begin{enumerate}
+\tightlist
+\item
+  Copy and paste your code and make slight adaptions (\textbf{don't do
+  this}).
+\item
+  Use a \texttt{for}-loop
+\item
+  Use functional programming
+\end{enumerate}
+\end{frame}
+
+\begin{frame}[fragile]
+Let's consider the following problem: We want to calculate the mean step
+length of each fisher from the \texttt{amt\_fisher} data set:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(amt)}
+\FunctionTok{data}\NormalTok{(amt\_fisher)}
+\FunctionTok{unique}\NormalTok{(amt\_fisher}\SpecialCharTok{$}\NormalTok{name)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] "Leroy"   "Ricky T" "Lupe"    "Lucile" 
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+For the first animal \texttt{Leroy}\footnote<.->{Note, I am ignoring
+  sampling rates here.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Leroy"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 186.9954
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Now we could do the same for the other three individuals:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Ricky T"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 41.9739
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Lupe"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 61.04558
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Lucile"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 85.95821
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{itemize}
+\item
+  We would also need an other vector to save the results.
+\item
+  While this approach might be OK for only a few individuals, it becomes
+  very tedious for many animals or if you would like to add an
+  additional grouping factor (say, we would also want to calculate the
+  mean step for each day).
+\item
+  \texttt{for}-loops can be useful here.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+Note, only the name of the animal changes
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Ricky T"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 41.9739
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Lupe"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 61.04558
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==} \StringTok{"Lucile"}\NormalTok{) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 85.95821
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+We could use a variable to store the name of animal currently under
+evaluation, for example \texttt{i}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{i }\OtherTok{\textless{}{-}} \StringTok{"Ricky T"}
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==}\NormalTok{ i) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 41.9739
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{i }\OtherTok{\textless{}{-}} \StringTok{"Lupe"}
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==}\NormalTok{ i) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 61.04558
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{i }\OtherTok{\textless{}{-}} \StringTok{"Lucile"}
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==}\NormalTok{ i) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 85.95821
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{itemize}
+\tightlist
+\item
+  \texttt{i} takes the name of the animal that is currently under
+  evaluation. Once the code block is executed, \texttt{i} is updated to
+  the next name.
+\item
+  Everything else is the \textbf{same}.
+\end{itemize}
+
+A \texttt{for}-loop has one variable, that changes for each go.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \FunctionTok{c}\NormalTok{(}\StringTok{"Leroy"}\NormalTok{, }\StringTok{"Ricky T"}\NormalTok{, }\StringTok{"Lupe"}\NormalTok{, }\StringTok{"Lucile"}\NormalTok{)) \{}
+  \CommentTok{\# Do something}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+The body of the looped (everything between \texttt{\{} and \texttt{\}})
+is executed \textbf{four} times. Each time the value of \texttt{i}
+changes.
+\end{frame}
+
+\begin{frame}[fragile]
+We can use such a loop to calculate the mean step length for each
+animal:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \FunctionTok{c}\NormalTok{(}\StringTok{"Leroy"}\NormalTok{, }\StringTok{"Ricky T"}\NormalTok{, }\StringTok{"Lupe"}\NormalTok{, }\StringTok{"Lucile"}\NormalTok{)) \{}
+\NormalTok{  amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==}\NormalTok{ i) }\SpecialCharTok{|\textgreater{}} 
+    \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}[fragile]
+Finally, we have to take care of the results and save them in a new
+variable, which I called \texttt{res} here.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{res }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{()}
+\NormalTok{j }\OtherTok{\textless{}{-}} \DecValTok{1}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \FunctionTok{c}\NormalTok{(}\StringTok{"Leroy"}\NormalTok{, }\StringTok{"Ricky T"}\NormalTok{, }\StringTok{"Lupe"}\NormalTok{, }\StringTok{"Lucile"}\NormalTok{)) \{}
+\NormalTok{  res[j] }\OtherTok{\textless{}{-}}\NormalTok{ amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{filter}\NormalTok{(name }\SpecialCharTok{==}\NormalTok{ i) }\SpecialCharTok{|\textgreater{}} 
+    \FunctionTok{step\_lengths}\NormalTok{() }\SpecialCharTok{|\textgreater{}} \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)}
+\NormalTok{  j }\OtherTok{\textless{}{-}}\NormalTok{ j }\SpecialCharTok{+} \DecValTok{1}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{itemize}
+\tightlist
+\item
+  \texttt{for}-loops are a significant improvement compared to approach
+  \#1.
+\item
+  However, \texttt{for}-loops \emph{can} become a bit tedious if we have
+  multiple grouping instances (e.g., multiple animals for multiple
+  years). We potentially need nested \texttt{for}-loops.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{A slightly deeper look at R}
+\protect\hypertarget{a-slightly-deeper-look-at-r}{}
+\begin{block}{What is a \texttt{tibbles}?}
+\protect\hypertarget{what-is-a-tibbles}{}
+\begin{itemize}
+\tightlist
+\item
+  \texttt{tibbles} are \emph{modern} \texttt{data.frame}s.
+\item
+  A tibble can have list columns.
+\item
+  A list is an other data structure in R, that can hold any other data
+  structure.
+\end{itemize}
+
+With list columns it is easy to have more complex splits of your data
+(e.g., animals/seasons/weeks).
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{What is a list?}
+\protect\hypertarget{what-is-a-list}{}
+Lists are yet an other data structures for R. Lists are can contain any
+object (even other lists).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{l }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\StringTok{"a"}\NormalTok{, }\AttributeTok{b =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{, }\AttributeTok{x =} \FunctionTok{list}\NormalTok{(}\FunctionTok{list}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{)))}
+\FunctionTok{str}\NormalTok{(l)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+List of 3
+$ : chr "a"
+$ b: int [1:10] 1 2 3 4 5 6 7 8 9 10
+$ x:List of 1
+..$ :List of 1
+.. ..$ : int [1:10] 1 2 3 4 5 6 7 8 9 10
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{Examples for lists}
+\protect\hypertarget{examples-for-lists}{}
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{a =} \DecValTok{1}\SpecialCharTok{:}\DecValTok{3}\NormalTok{, }\AttributeTok{b =} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{3}\NormalTok{))}
+\NormalTok{x[[}\DecValTok{1}\NormalTok{]]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 1 2 3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x}\SpecialCharTok{$}\NormalTok{a}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 1 2 3
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{x[[}\StringTok{"b"}\NormalTok{]]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[[1]]
+[1] 1 2 3
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}{Functional programming in R}
+\protect\hypertarget{functional-programming-in-r}{}
+\begin{block}{What is functional programming?}
+\protect\hypertarget{what-is-functional-programming}{}
+\begin{quote}
+Simply put, FP is exactly what it sounds like. If you are doing
+something more than once, it belongs in a function. In FP, functions are
+the primary method with which you should carry out tasks. All actions
+are just (often creative) implementations of functions you've written.
+\href{https://towardsdatascience.com/cleaner-r-code-with-functional-programming-adc37931ef7a}{towardsdatascience.com}
+\end{quote}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{The \texttt{apply}-family}
+\protect\hypertarget{the-apply-family}{}
+These functions apply a function on a \texttt{matrix}, \texttt{vector}
+or \texttt{list}.
+
+For matrices:
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{apply()} (we won't cover this here in more detail)
+\end{itemize}
+
+For vectors and lists
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{lapply()}
+\item
+  \texttt{sapply()}
+\end{itemize}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{\texttt{lapply()}}
+\protect\hypertarget{lapply}{}
+\texttt{lapply()} applies a function to each element of a list (or a
+vector) and returns list, then \texttt{lapply} can be used.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{l }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{3}\NormalTok{, }\DecValTok{2}\NormalTok{)}
+\FunctionTok{lapply}\NormalTok{(l, length)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[[1]]
+[1] 3
+
+[[2]]
+[1] 1
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+We could achieve the same with a \texttt{for}-loop:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{res }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+\ControlFlowTok{for}\NormalTok{ (i }\ControlFlowTok{in} \DecValTok{1}\SpecialCharTok{:}\DecValTok{2}\NormalTok{) \{}
+\NormalTok{  res[[i]] }\OtherTok{\textless{}{-}} \FunctionTok{length}\NormalTok{(l[[i]])}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}[fragile]
+Here it would make more sense to use \texttt{sapply} (R will try to
+simplify the data structure of the result).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sapply}\NormalTok{(l, length)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Note, we used the shortest possible way, it is also possible to
+explicitly work with the object the function is applied to.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sapply}\NormalTok{(l, }\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{length}\NormalTok{(x))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+
+Since \texttt{length} only uses one argument (here \texttt{x}), we do
+not have to explicitly call the function.
+
+This can be shorted (since R 4.1) to
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{sapply}\NormalTok{(l, \textbackslash{}(x) }\FunctionTok{length}\NormalTok{(x))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+The \texttt{purrr} package provides a more type-stable way to
+\texttt{*apply()} functions. These are called \texttt{map\_*()}.
+
+\begin{itemize}
+\tightlist
+\item
+  \texttt{lapply()} -\textgreater{} \texttt{map()}
+\item
+  \texttt{sapply()} -\textgreater{} \texttt{map\_*()}
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \texttt{map\_lgl()} for logical values
+  \item
+    \texttt{map\_dbl()} for doubles
+  \item
+    \texttt{map\_int()} for integers
+  \item
+    \texttt{map\_chr()} for text
+  \end{itemize}
+\end{itemize}
+
+In addition there variants of all \texttt{map*()} functions that take
+two inputs (\texttt{map2\_*()}) and many inputs (\texttt{pmap\_*()}).
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(purrr)}
+\FunctionTok{map}\NormalTok{(l, length)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[[1]]
+[1] 3
+
+[[2]]
+[1] 1
+\end{verbatim}
+
+Better
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{map\_int}\NormalTok{(l, length)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+Again, it is possible to access the object directly. This can be done as
+before with \texttt{function(\textless{}var\textgreater{})},
+\texttt{\textbackslash{}(x)} or \texttt{\textasciitilde{}}. When using
+\texttt{\textasciitilde{}} the object currently under evaluation can be
+accessed with \texttt{.} or \texttt{.x}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{map\_int}\NormalTok{(l, }\ControlFlowTok{function}\NormalTok{(x) }\FunctionTok{length}\NormalTok{(x))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{map\_int}\NormalTok{(l, }\SpecialCharTok{\textasciitilde{}} \FunctionTok{length}\NormalTok{(.))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{map\_int}\NormalTok{(l, }\SpecialCharTok{\textasciitilde{}} \FunctionTok{length}\NormalTok{(.x))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 3 1
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+An example for \texttt{map2\_*}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{a }\OtherTok{\textless{}{-}} \DecValTok{1}\SpecialCharTok{:}\DecValTok{4}
+\NormalTok{b }\OtherTok{\textless{}{-}} \DecValTok{4}\SpecialCharTok{:}\DecValTok{1}
+
+\FunctionTok{map2\_dbl}\NormalTok{(a, b, }\SpecialCharTok{\textasciitilde{}}\NormalTok{ .x }\SpecialCharTok{+}\NormalTok{ .y)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+[1] 5 5 5 5
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]{Nest and unnest}
+\protect\hypertarget{nest-and-unnest}{}
+An example data set
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{set.seed}\NormalTok{(}\DecValTok{12}\NormalTok{)}
+\NormalTok{dat }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(}
+  \AttributeTok{id =} \FunctionTok{rep}\NormalTok{(}\DecValTok{1}\SpecialCharTok{:}\DecValTok{10}\NormalTok{, }\AttributeTok{each =} \DecValTok{10}\NormalTok{), }
+  \AttributeTok{x =} \FunctionTok{runif}\NormalTok{(}\DecValTok{100}\NormalTok{), }
+  \AttributeTok{y =} \FunctionTok{runif}\NormalTok{(}\DecValTok{100}\NormalTok{)}
+\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+\end{frame}
+
+\begin{frame}[fragile]
+We can use \texttt{nest} and \texttt{unnest} to create so called
+\texttt{list}-columns.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dat }\SpecialCharTok{|\textgreater{}} \FunctionTok{nest}\NormalTok{(}\AttributeTok{data =} \FunctionTok{c}\NormalTok{(x, y))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 10 x 2
+      id data             
+   <int> <list>           
+ 1     1 <tibble [10 x 2]>
+ 2     2 <tibble [10 x 2]>
+ 3     3 <tibble [10 x 2]>
+ 4     4 <tibble [10 x 2]>
+ 5     5 <tibble [10 x 2]>
+ 6     6 <tibble [10 x 2]>
+ 7     7 <tibble [10 x 2]>
+ 8     8 <tibble [10 x 2]>
+ 9     9 <tibble [10 x 2]>
+10    10 <tibble [10 x 2]>
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dat }\SpecialCharTok{|\textgreater{}} \FunctionTok{nest}\NormalTok{(}\AttributeTok{data =} \SpecialCharTok{{-}}\NormalTok{id)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 10 x 2
+      id data             
+   <int> <list>           
+ 1     1 <tibble [10 x 2]>
+ 2     2 <tibble [10 x 2]>
+ 3     3 <tibble [10 x 2]>
+ 4     4 <tibble [10 x 2]>
+ 5     5 <tibble [10 x 2]>
+ 6     6 <tibble [10 x 2]>
+ 7     7 <tibble [10 x 2]>
+ 8     8 <tibble [10 x 2]>
+ 9     9 <tibble [10 x 2]>
+10    10 <tibble [10 x 2]>
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+We can then work on the nested column(s), using \texttt{mutate} in
+combination with \texttt{map\_*}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dat }\SpecialCharTok{|\textgreater{}} \FunctionTok{nest}\NormalTok{(}\AttributeTok{data =} \SpecialCharTok{{-}}\NormalTok{id) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{centroid.x =} \FunctionTok{map\_dbl}\NormalTok{(data, }\SpecialCharTok{\textasciitilde{}} \FunctionTok{mean}\NormalTok{(.x}\SpecialCharTok{$}\NormalTok{x)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 10 x 3
+      id data              centroid.x
+   <int> <list>                 <dbl>
+ 1     1 <tibble [10 x 2]>      0.315
+ 2     2 <tibble [10 x 2]>      0.444
+ 3     3 <tibble [10 x 2]>      0.410
+ 4     4 <tibble [10 x 2]>      0.672
+ 5     5 <tibble [10 x 2]>      0.459
+ 6     6 <tibble [10 x 2]>      0.562
+ 7     7 <tibble [10 x 2]>      0.519
+ 8     8 <tibble [10 x 2]>      0.575
+ 9     9 <tibble [10 x 2]>      0.418
+10    10 <tibble [10 x 2]>      0.422
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+\begin{block}{Lets come back to our example}
+\protect\hypertarget{lets-come-back-to-our-example}{}
+First, lets use \texttt{nest()}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{nest}\NormalTok{(}\AttributeTok{data =} \SpecialCharTok{{-}}\NormalTok{name)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 4 x 2
+  name    data                  
+  <chr>   <list>                
+1 Leroy   <trck_xyt [919 x 5]>  
+2 Ricky T <trck_xyt [8,958 x 5]>
+3 Lupe    <trck_xyt [3,004 x 5]>
+4 Lucile  <trck_xyt [1,349 x 5]>
+\end{verbatim}
+\end{block}
+\end{frame}
+
+\begin{frame}[fragile]
+Now we can iterate over all animals
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{nest}\NormalTok{(}\AttributeTok{data =} \SpecialCharTok{{-}}\NormalTok{name) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{mean.sl =} \FunctionTok{map\_dbl}\NormalTok{(data, }\SpecialCharTok{\textasciitilde{}} \FunctionTok{step\_lengths}\NormalTok{(.x) }\SpecialCharTok{|\textgreater{}} 
+                             \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 4 x 3
+  name    data                   mean.sl
+  <chr>   <list>                   <dbl>
+1 Leroy   <trck_xyt [919 x 5]>     187. 
+2 Ricky T <trck_xyt [8,958 x 5]>    42.0
+3 Lupe    <trck_xyt [3,004 x 5]>    61.0
+4 Lucile  <trck_xyt [1,349 x 5]>    86.0
+\end{verbatim}
+\end{frame}
+
+\begin{frame}[fragile]
+The approach of list-columns makes it easy to have several grouping
+instances.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{amt\_fisher }\SpecialCharTok{|\textgreater{}} \FunctionTok{mutate}\NormalTok{(}\AttributeTok{wk =}\NormalTok{ lubridate}\SpecialCharTok{::}\FunctionTok{week}\NormalTok{(t\_)) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{nest}\NormalTok{(}\AttributeTok{data =} \SpecialCharTok{{-}}\FunctionTok{c}\NormalTok{(name, wk)) }\SpecialCharTok{|\textgreater{}} 
+  \FunctionTok{mutate}\NormalTok{(}\AttributeTok{mean.sl =} \FunctionTok{map\_dbl}\NormalTok{(data, }\SpecialCharTok{\textasciitilde{}} \FunctionTok{step\_lengths}\NormalTok{(.x) }\SpecialCharTok{|\textgreater{}} 
+                             \FunctionTok{mean}\NormalTok{(}\AttributeTok{na.rm =} \ConstantTok{TRUE}\NormalTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+# A tibble: 21 x 4
+   name       wk data                   mean.sl
+   <chr>   <dbl> <list>                   <dbl>
+ 1 Leroy       6 <trck_xyt [47 x 5]>       12.6
+ 2 Leroy       7 <trck_xyt [330 x 5]>     204. 
+ 3 Leroy       8 <trck_xyt [261 x 5]>     239. 
+ 4 Leroy       9 <trck_xyt [281 x 5]>     145. 
+ 5 Ricky T     6 <trck_xyt [232 x 5]>      40.6
+ 6 Ricky T     7 <trck_xyt [737 x 5]>      40.3
+ 7 Ricky T     8 <trck_xyt [1,345 x 5]>    46.1
+ 8 Ricky T     9 <trck_xyt [1,488 x 5]>    47.1
+ 9 Ricky T    10 <trck_xyt [1,290 x 5]>    42.3
+10 Ricky T    11 <trck_xyt [1,280 x 5]>    36.2
+# i 11 more rows
+\end{verbatim}
+\end{frame}
+
+\begin{frame}{Take-home messages}
+\protect\hypertarget{take-home-messages}{}
+\begin{enumerate}
+\tightlist
+\item
+  Available data structures can be used to deal with multiple animals.
+\item
+  Lists are just ``containers'' that contain objects.
+\item
+  List columns are a great way to organize complex data structures.
+\end{enumerate}
+\end{frame}
+
+
+\end{document}

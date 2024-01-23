@@ -1,7 +1,7 @@
 #######################################################X
 #----Analysis of Animal Movement Data in R Workshop----X
 #--------------Module 01 -- Introduction --------------X
-#----------------Last updated 2023-03-03---------------X
+#----------------Last updated 2024-01-22---------------X
 #-------------------Code Walkthrough-------------------X
 #######################################################X
 
@@ -72,11 +72,15 @@ make_track(dat, x_, y_, ts)
 # using the crs argument using the the EPSG code.
 
 make_track(dat, x_, y_, ts, crs = 5070)
+dat$name
 
 # If we want to retain the name column. There is also the argument `all_cols`
 # which will keep all columns.
 tr <- make_track(dat, x_, y_, ts, name = name, crs = 5070)
 tr
+
+class(tr)
+
 
 # Working with tracks ----
 
@@ -147,6 +151,7 @@ nrow(leroy)
 nrow(leroy2)
 
 unique(leroy2$burst_)
+table(leroy2$burst_)
 
 # Note that we lost 26 observations and gained one column (`burst_`). We lost
 # observations that are not within the predefined sampling rate. And each
@@ -159,6 +164,7 @@ unique(leroy2$burst_)
 leroy2 <- filter_min_n_burst(leroy2, min_n = 3)
 
 nrow(leroy2)
+table(leroy2$burst_)
 
 # ... Movement attributes ----
 
@@ -227,8 +233,8 @@ s2 |> print(n = Inf)
 # Time of day ----
 
 leroy2 %>% time_of_day() %>% count(tod_)
-
 leroy2 %>% steps_by_burst() %>% time_of_day(where = "both")
 
 # For more information
 ?suncalc::getSunlightTimes
+
