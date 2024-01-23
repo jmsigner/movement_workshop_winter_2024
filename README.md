@@ -2,7 +2,7 @@
 
 ## Tentative schedule
 
-- When: 13th to 17th of March 2023
+- When: 22nd to 26th of January 2024
 - Where: online
 
 ## Program
@@ -24,7 +24,7 @@
  - Simulations from fitted iSSF (J)
  
 ### Day 5:
- - Strategies to model multiple animals (J)
+ - Extensions of iSSFs (J)
  - Validation of models for habitat selection (B)
 
 
