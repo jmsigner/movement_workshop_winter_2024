@@ -134,7 +134,7 @@ for (i in 1:10) {
   res$area[i] <- filter(dat, day == res$day[i], name == res$name[i]) |> 
     hr_mcp() |> hr_area() |> pull(area)
 }
-res
+res |> print(n = 12)
 
 # In order to iterate over all individuals, we can replace `10` with the number
 # of instances (= `nrow(res)`).
@@ -219,6 +219,7 @@ dat1
 
 dat1 |> select(-data, -hr.mcp)
 
+
 # Do the number of relocations matter? ----
 # We could now ask, if the number of relocations influence the home-range size?
 # Using the current setup this is easy to answer. We just need one new column
@@ -261,6 +262,14 @@ dat2 <- dat |> nest(data = -c(name, day)) |>
     n = map_int(data, nrow)
   )
 dat2
+
+
+# Different sampling rates for different animals
+dat2a <- dat |> nest(data = -name) 
+dat2a$sampling_rate <- 1:4
+
+dat2a <- mutate(dat2a, data1 = map2(data, sampling_rate, ~ 
+                                      track_resample(.x, rate = hours(.y), tolerance = minutes(5))))
 
 # And we can redo the same summary as before
 ggplot(dat2, aes(n, area.mcp, col = name)) + geom_point() + geom_smooth()
@@ -317,5 +326,8 @@ dat3 |> ggplot(aes(name, hrs, fill = estimator)) + geom_boxplot() +
 
 dat2 <- dat2[1:10, ] |> mutate(overlap = map2(hr.mcp, hr.kde, ~ hr_overlap(.x, .y)))
 dat2
+dat2$overlap[[2]]
 dat2 |> unnest(overlap)
+
+‚
 

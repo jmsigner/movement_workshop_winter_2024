@@ -1,0 +1,395 @@
+---
+title: "(integrated) Step-Selection Functions"
+author: "Johannes Signer"
+date: "January 2024"
+output:
+  beamer_presentation:
+    fig_width: 4.5
+    fig_height: 4.5
+    fig_caption: false
+    keep_tex: false
+    pandoc_args: [
+      "--slide-level", "1",
+      "--template", "../lib/beamer-goe.tex"]
+toc: false
+---
+
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(terra)
+library(here)
+knitr::opts_knit$set(root.dir = here::here("06 iSSF"))
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, 
+  fig.height = 4, fig.width = 6, cache = FALSE, out.width = "85%", res = 600,
+  comment = "", fig.align = "center")
+options(width = 70, str = strOptions(strict.width = "wrap"))
+theme_set(theme_light()) 
+```
+
+# Availability matters
+
+- Habitat-selection function assume that each point in the availability domain (e.g., the home range) is available to the animal at any given point in time. 
+- This assumption might be met with relatively coarse data (large sampling rates), but the assumption becomes unrealistic for data sets with a higher temporal resolution. 
+
+# Good overviews are
+
+```{r, echo = FALSE, out.width="70%"}
+knitr::include_graphics(here("img/northrup.png"))
+``` 
+
+\pause
+
+```{r, echo = FALSE, out.width="70%"}
+knitr::include_graphics(here("img/thurfjell.png"))
+``` 
+
+----
+
+For a more statistical review on Step-Selection Functions (SSF) also see
+
+```{r, echo = FALSE, out.width="70%"}
+knitr::include_graphics(here("img/michelot2024.png"))
+``` 
+
+# The basic idea behind an SSF
+
+- Habitat selection is constrained by the movement capacity (i.e., how far can an animal displace within a single time step) and 
+- the current position of the animal.
+
+```{r, echo = FALSE, out.width="70%", fig.cap="From Michelot et al. 2024"}
+knitr::include_graphics(here("img/michelot2024_fig1.png"))
+``` 
+
+
+# Step-selection function (SSF)
+
+Fortin et al. (2005) introduced the step-selection function as: 
+
+$$
+u(s,t+\Delta t) | u(s', t) = \frac{w(X(s); \beta(\Delta t))}{\int_{\tilde{s}\in G}w(X(\tilde{s}, s'); \beta(\Delta t))d\tilde{s}} 
+$$
+
+ 
+- $u(s, t+\Delta t) | u(s', t)$ is conditional probability of finding the individual at location $s$ at time $t+\Delta t$ given it was at location $s'$ at time $t$.        
+
+- $w(X(s); \beta(\Delta t))$ is the exponential selection function, which again is $w(X(s); \beta(\Delta t)) = \exp(\beta_1 x_1(s) + \dots + \beta_kx_k(s))$. 
+
+- The denominator is the full redistribution kernel that is usually approximated through random steps. But see Michelot et al. 2024 for other approaches. 
+
+----
+
+- We can estimate the $\beta$'s using a conditional logistic regression with the R function `clogit()` from the `survival` package. 
+
+- The `amt` package provides a wrapper to this called `fit_ssf()`. 
+
+--- 
+
+## Creating random steps for SSF
+
+We will cover this in much more detail in the R walkthrough. The workflow to fit an SSF in most cases follows the same steps: 
+
+1. Make sure the data are in bursts of regular sampling rates (Note, the $\Delta t$ in the equation). 
+\pause
+2. Create steps (that is converting two consecutive points to a step with a start and end point). 
+
+-----
+
+```{r, echo=FALSE, fig.cap="From Thurfjell et al. 2014"}
+knitr::include_graphics("img/ssf1.png")
+```
+
+
+----
+
+```{r, echo = FALSE}
+library(amt)
+library(ggplot2)
+library(lubridate)
+
+trk <- tibble(
+  x = c(0, 0, 1, 1.5, 2, 2, 3, 4, 3), 
+  y = c(0, 1, 1, 1.5, 2, 3, 2, 1, 3),
+  t = now() + hours(0:8), 
+  burst_ = c(1, 1, 1, 1, 2, 2, 2, 2, 2)
+)
+
+ggplot(trk, aes(x, y, group = burst_, col = factor(burst_))) + 
+  geom_point(size = 3, alpha = 0.4, col = "blue") +
+  geom_path(arrow = arrow(length = unit(0.55, "cm"))) +
+  theme_minimal() +
+  labs(col = "burst_")
+
+```
+
+---------------
+
+
+```{r, echo = FALSE}
+trk1 <- trk |> make_track(x, y, t, burst_ = burst_)
+tad <- random_numbers(make_vonmises_distr(kappa = 10), n = 1e4)
+sl <- 0.5
+
+stp2 <- steps_by_burst(trk1)
+rs1 <- random_steps(stp2, rand_sl = sl, rand_ta = tad, n_control = 25)
+ggplot(trk, aes(x, y, group = burst_, col = factor(burst_))) + 
+  geom_hline(yintercept = 0, lty = 2, col = "red") +
+  geom_path(arrow = arrow(length = unit(0.55, "cm"))) +
+  geom_segment(aes(x1_, y1_, xend = x2_, yend = y2_), col = "grey75", data = rs1 |> filter(!case_), inherit.aes = FALSE, alpha = 0.5) +
+  geom_point(size = 3, alpha = 0.7, col = "blue") +
+  theme_light()
+
+
+
+```
+
+----
+
+
+3. Sample for each observed step $k$ random steps using the distribution from the observed steps and turn angles.
+
+4. Extract covariates at the **end** of steps, and
+
+5. Fit a conditional logistic regression.
+
+------
+
+- Interpretation of parameters can be done exactly the same way as for HSF (previous module). 
+- The relative selection strength (RSS) is how many times more probable it is, to select one step over an other step, when the two steps differ in one covariate at the end of the step.
+
+------
+
+We fitted a simple model to one deer: `fit_ssf(case_ ~ forest + strata(step_id_))`
+
+```{r, echo = FALSE}
+set.seed(123)
+library(amt)
+library(broom)
+data(deer)
+forest <- get_sh_forest()
+
+m1 <- deer %>% steps_by_burst() %>% random_steps() %>% 
+  extract_covariates(forest) %>% 
+  fit_ssf(case_ ~ forest + strata(step_id_))
+tidy(m1$model)
+```
+
+**Think-pair-share:** Try to give an interpretation on the estimated coefficient for forest.
+
+\pause
+
+- `forest` indicates if the end of a step is located inside a forest or not.
+- $\exp(\beta_1) = \exp(0.302) = 1.35$. This indicates that it is 1.35 times more probably for a step to end in a forest patch than in a non-forest patch. 
+
+
+# Take-home points
+
+- The availability is usually constraint and SSFs allow to model this. 
+- Each observed step is paired with random $k$ steps. 
+- An observed step and $k$ random steps form a strata.
+- We can use conditional logistic regression to estimate the selection coefficients
+
+# The integrated Step-Selection Function (iSSF)
+
+- Forester et al. 2009 suggested to include the step length as an additional covariate to account for the bias that is introduced, because we are sampling from the observed steps. These steps are not independent of habitat selection. 
+- Avgar et al. 2016 coined the term **integrated** SSF and showed how commonly used statistical distributions can be used to model the selection-free movement kernel. 
+
+---
+
+## For background see
+
+```{r, echo = FALSE, out.width="70%"}
+knitr::include_graphics(here("img/avgar.png"))
+``` 
+
+\pause
+
+```{r, echo = FALSE, out.width="70%"}
+knitr::include_graphics(here("img/fieberg.png"))
+``` 
+
+----
+
+## iSSF in a bit more detail 
+
+- This adds a further term to the equation we saw before: 
+
+
+$$
+u(s,t+\Delta t) | u(s', t) = \frac{w(X(s); \beta(\Delta t))\phi(s, s'; \gamma(\Delta t))}{\int_{\tilde{s}\in G}w(X(\tilde{s}, s'); \beta(\Delta t))\phi(\tilde{s},s'; \gamma(\Delta t))d\tilde{s}} 
+$$
+ 
+- $\phi(s,s'; \gamma(\Delta t))$ is a selection-independent movement kernel that describes how the animal would move in homogeneous habitat.
+
+
+# Characterizing animal movement (the movement kernel)
+
+- In order to use statistical models to describe the movement process. 
+- This is most easily done using statistical distributions for step lengths and turn angles. 
+
+
+# Distributions in statistics
+
+- Random variables, are variables where each outcome has a probability and these probabilities are often mathematically summarized with functions that are characterized with one or more parameters (=**distributions**). 
+- A distribution translates the a possible outcome in a probability, given some parameters.
+
+
+---
+
+For example, a normal distribution is characterized by the $\mu$ (mean) and $\sigma$ (standard deviation). If we know $\mu$ and $\sigma$ we can plot the distribution
+
+```{r, out.width="60%"}
+curve(dnorm(x, mean = 10, sd = 2), from = 5, to = 15)
+```
+
+Note, `dnorm()` is a built-in function for the normal density function.
+
+---
+
+- The normal distribution is very widely used in statistics, however, it is not useful to characterize step lengths and turn angles of animals, because values can range from $-\infty$ to $\infty$.
+
+**Think-pair-share:** what properties do distributions need to have, in order to describe animal movement?
+
+\pause
+
+
+- For step lengths we need a distribution with a support of positive values. 
+- For turn angles we need a wrapped distribution. 
+
+-------
+
+## Distributions for step lengths
+
+- Suitable distribution for step lengths: Gamma, Exponential, Half Normal, Weibull and possibly others. 
+- We will use the Gamma distribution.
+- The Gamma distribution has two parameters: shape and scale.
+
+---
+
+```{r, echo = FALSE, out.width="100%"}
+xs <- seq(0.5, 200, 0.5)
+params <- expand_grid(shape = c(2, 5, 10, 15, 20), scale = c(2, 5, 8))
+params %>% mutate(
+  data = map2(shape, scale, ~
+                tibble(
+                  x = xs, 
+                  pdf = dgamma(xs, shape = .x, scale = .y)))) %>% 
+  unnest(cols = data) %>% 
+  mutate(
+    scale_lab = paste0("scale = ", scale),
+    shape_lab = factor(shape)
+    ) %>% 
+  ggplot(aes(x, pdf, col = shape_lab)) + 
+  geom_line() + 
+  facet_grid(. ~ scale_lab, scale = "free") +
+  theme(legend.position = "bottom") + 
+  labs(x = "step length", col = "shape", col = "shape")
+```
+
+-------
+
+## Distributions for turn angles
+
+- For turn angles we need a wrapped distribution. 
+- A typical distributions are the von Mises or the wrapped Cauchy distribution. 
+
+-------
+
+## Parameters may change
+
+- Parameters for step-length distribution and turn-angle distribution can change, resembling different behavioral states of the animal (e.g., foraging vs. resting). 
+
+
+```{r, echo = FALSE, fig.cap="Figure from Moll et al. 2021"}
+knitr::include_graphics("../01 Introduction/img/moll3_part.jpg")
+```
+
+# Take-home messages
+
+1. We can use statistical distributions to characterize the movement of animals.
+2. Statistical distributions are described using one or more parameters. 
+3. Different behavioral states of the animal can be described with different parameter sets.
+
+
+
+-----
+
+- We can estimate the selection coefficients ($\beta$'s) and movement related coefficients ($\gamma$'s) again using a conditional logistic regression. 
+
+- But we are restricted to distributions from the exponential family. 
+
+- See Michelot et al. 2024 how this can be relaxed. 
+
+
+----
+
+Remember how we can characterize movement in discrete time:
+
+```{r, echo=FALSE, fig.cap="From Thurfjell et al. 2014"}
+knitr::include_graphics("img/ssf1.png")
+```
+
+----
+
+- Before we sampled random steps from the observed step lengths and turn angles. 
+- We replace this step by using statistical distributions (most often Gamma distribution for step lengths and von Mises distribution for turn angles). 
+
+
+----
+
+## Creating random steps for iSSFs
+
+We will cover this in much more detail in the R walkthrough. The workflow is usually as follows: 
+
+1. Make sure the data are in bursts of regular sampling rates (Note, the $\Delta t$ in the equation). 
+2. Create steps (that is converting two consecutive points to a step with a start and end point). 
+3. *Sample for each observed step $k$ random steps using the distribution from the observed steps and turn angles.*
+3. Sample for each observed step $k$ random steps **using a statistical distribution fit to the observed steps or turn angles**.
+4. Extract covariates at the *end* of steps, and
+5. Fit a conditional logistic regression.
+
+----
+
+## How to include movement?
+
+- Including the habitat independent movement kernel in the model is possible through functions for the step length and turn angles^[see here for details: https://conservancy.umn.edu/bitstream/handle/11299/218272/AppC_iSSA_movement.html].
+
+- For the Gamma distribution the coefficients of the 
+  - step length is linked to the scale parameter, and 
+  - the log of the step length is linked to the shape parameter. 
+
+- For the von Mises distribution the cosine of the turn angle is linked to the concentration parameter. 
+
+Once the model is fitted to the data, the tentative parameter estimates can be adjusted (more on this in module 7). 
+
+----
+
+## How many random steps do we need?
+
+- There is no rule of thumb, generally the more random steps the better. 
+- Typical number of random steps range from 10 to 100. 
+- An easy way to check if the number of random steps is sufficient, is to rerun the analysis several times with increasing an increasing number of random steps and check when estimates stabilize. 
+
+
+--- 
+
+
+# Take-home points
+
+- SSF can be extended by including movement (**iSSF**). 
+- We sample step length and turn angles from fitted statistical distributions. 
+- We then include functions of steps in the model. 
+
+
+# Key resources/publications
+
+\footnotesize
+
+- Avgar, T., Potts, J. R., Lewis, M. A., & Boyce, M. S. (2016). Integrated step selection analysis: bridging the gap between resource selection and animal movement. Methods in Ecology and Evolution, 7(5), 619-630.
+- Fortin, D., Beyer, H. L., Boyce, M. S., Smith, D. W., Duchesne, T., & Mao, J. S. (2005). Wolves influence elk movements: behavior shapes a trophic cascade in Yellowstone National Park. Ecology, 86(5), 1320-1330.
+- Michelot, T., Klappstein, N. J., Potts, J. R., & Fieberg, J. (2023). Understanding step selection analysis through numerical integration. Methods in Ecology and Evolution.
+- Forester, J. D., Im, H. K., & Rathouz, P. J. (2009). Accounting for animal movement in estimation of resource selection functions: sampling and data analysis. Ecology, 90(12), 3554-3565.
+- Northrup, J. M., Vander Wal, E., Bonar, M., Fieberg, J., Laforge, M. P., Leclerc, M., ... & Gerber, B. D. (2022). Conceptual and methodological advances in habitat‐selection modeling: guidelines for ecology and evolution. Ecological Applications, 32(1), e02470.
+- Signer, J., Fieberg, J., & Avgar, T. (2019). Animal movement tools (amt): R package for managing tracking data and conducting habitat selection analyses. Ecology and evolution, 9(2), 880-890.
+- Thurfjell, H., Ciuti, S., & Boyce, M. S. (2014). Applications of step-selection functions in ecology and conservation. Movement ecology, 2(1), 1-12.
