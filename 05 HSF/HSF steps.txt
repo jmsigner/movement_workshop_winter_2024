@@ -1,0 +1,16 @@
+HSF steps:
+1. Decide on your environmental variables
+2. Decide (hypothesize) whether each is a resource, risk, or condition
+  -- Resources and risks can probably be modeled with just a single coefficient
+  -- Conditions should probably be modeled with a parabola (x + x^2)
+3. Decide on your availability domain.
+4. From within your availability domain, sample a large number of available points to combine with your used points. (line 265)
+5. Attach your environmental variables to your used and available points. (line 266)
+6. Assign large weights (e.g., 5000) to the available points and 1 to the used points. (make a new column; line 268)
+7. Use logistic regression (as a fitting trick) to estimate the betas of your HSF. (line 271)
+8. Interpret your fitted model
+  -- Probably some combination of:
+    * Summarize the coefficients (line 275)
+    * What-if scenarios (using RSS; lines 325 - 385)
+    * RSS figures (or log-RSS figures; lines 392 - 503)
+    * Maps (either w(x), RSS, or log-RSS; lines 505 - end)

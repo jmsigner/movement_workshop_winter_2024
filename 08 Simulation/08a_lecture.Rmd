@@ -1,0 +1,503 @@
+---
+title: "Simulating Space Use from fitted iSSFs"
+author: "Johannes Signer"
+date: "January 2024"
+output:
+  beamer_presentation:
+    fig_width: 4.5
+    fig_height: 4.5
+    fig_caption: false
+    keep_tex: false
+    pandoc_args: [
+      "--slide-level", "2",
+      "--template", "../lib/beamer-goe.tex"]
+toc: false
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(here)
+library(amt)
+library(terra)
+knitr::opts_knit$set(root.dir = here::here("08 Simulation"))
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = FALSE, 
+#  fig.height = 4, fig.width = 6, cache = FALSE, out.width = "85%", res = 600,
+  comment = "", fig.align = "center", cache = FALSE)
+options(width = 70, str = strOptions(strict.width = "wrap"))
+theme_set(theme_light()) 
+```
+
+
+## Outline
+
+- Why -- Reasons for simulations
+- How -- Approaches to do simulations
+- Case Study
+
+------
+
+**Think-pair-share**: Can we use a HSF/RSF to predict a possible
+path of an animal.
+
+# Why -- Reasons for simulations
+
+## H/RSFs vs iSSFs
+
+- RSFs: 
+  - There is no movement model built-in that we can take advantage of when simulating space use.
+  - It is common practice to just multiply coefficients with resources to obtain, exponentiate and normalize to obtain a utilization distribution. 
+  
+  \pause
+  
+$$
+UD(s_j) = \frac{w(s_j)}{\sum_{j = 1}^G w(s_j)} = \frac{\exp(\sum_{i = 1}^n\beta_i x_i(s_j))}{\sum_{j = 1}^G \exp(\sum_{i = 1}^n\beta_i x_i(s_j))}
+$$
+
+\pause
+  
+- iSSF: 
+  - We have a simple movement model built-in, that allows integration of the movement process.
+  - We can no longer simply multiply selection coefficients with resources.
+
+-----------
+
+### For iSSFs this is a bit more complicated
+
+If we take the same approach for iSSFs, we introduce a **bias** because
+we are neglecting conditional formulation of iSSFs when creating maps.
+
+\includegraphics<1>[width=0.9\linewidth]{img/signer0.png}
+
+------------------------------------------------------------------------
+
+-   We used simulations to compare the two approaches:
+    -   naive
+    -   simulation-based
+
+\includegraphics<1>[width=0.45\linewidth]{img/signer2.png}
+
+------------------------------------------------------------------------
+
+- Comparison between *true* space use and simulated space use:
+
+\includegraphics<1>[width=0.9\linewidth]{img/signer3.png}
+
+
+------------------------------------------------------------------------
+
+- The bias becomes even larger if selection is stronger:
+
+\includegraphics<1>[width=0.9\linewidth]{img/signer2017.png}
+
+------------------------------------------------------------------------
+
+- This bias also propagates through derived quantities (e.g., home-range size)
+
+\includegraphics<1>[width=0.9\linewidth]{img/signer4.png}
+
+
+## Analytical solutions
+
+Under certain conditions there are analytical solutions to the long term space use (= range distribution or steady state distribution). 
+
+\includegraphics<2>[width=0.9\linewidth]{../img/potts2020.png}
+\includegraphics<3>[width=0.9\linewidth]{../img/potts2022b.png}
+
+## Dynamic simulations
+
+\includegraphics<2>[width=0.9\linewidth]{../img/signer2024.png}
+
+
+## Motivation to simulate: Understanding the model
+
+The model specification can be abstract, e.g., what does the interaction between a covariate at the start of a step and the cosine of the turn angle mean?
+
+-------
+
+What how does the redistribution kernel for $\sim \beta_1 \cos(\text{ta}) x_\text{start}$ look, if $\beta_1 = -4$?
+
+\pause
+
+```{r, echo = FALSE}
+r <- rast(xmin = -10, xmax = 10, ymin = -10, ymax = 10, res = 0.05)
+r[] <- 0
+p <- terra::vect(cbind(c(1, 1, 6, 6, 1), c(-4, 4, 4, -4, -4)), type = "polygon")
+r <- rasterize(p, r, background = 0)
+names(r) <- "x"
+
+m1 <- make_issf_model(
+  coefs = c("cos(ta_):x_start" = -5),
+  sl = make_gamma_distr(2, 2), 
+  ta = make_vonmises_distr(kappa = 5))
+                
+rk <- redistribution_kernel(
+  m1, start = make_start(c(0, 0), ta_ = 0), 
+  map = r, as.rast = TRUE, max.dist = 5, 
+  landscape = "discrete",
+  tolerance.outside = 0.2)
+
+op <- par(mfrow = c(1, 2))
+plot(r, legend = FALSE)
+points(0, 0, cex = 2, pch = 20)
+plot(rk$redistribution.kernel, legend = FALSE)
+```
+
+------------
+
+Same model, but different position in geographic space.
+
+```{r, echo = FALSE}
+rk <- redistribution_kernel(m1, start = make_start(c(2, 0), ta_ = 0), 
+                            landscape = "discrete", tolerance.outside = 0.2,
+                            map = r, as.rast = TRUE, max.dist = 5)
+
+op <- par(mfrow = c(1, 2))
+plot(r, legend = FALSE)
+points(2, 0, cex = 2, pch = 20)
+plot(rk$redistribution.kernel, legend = FALSE)
+```
+
+-----
+
+What if the animal shows a preference for $x$? E.g., $\sim \beta_1 \cos(\text{ta}) x_\text{start} + \beta_2x_\text{end}$ and $\beta_2 = 2$.
+
+\pause
+
+```{r, echo = FALSE}
+m1 <- make_issf_model(
+  coefs = c("cos(ta_):x_start" = -5, "x_end" = 2),
+  sl = make_gamma_distr(2, 2), 
+  ta = make_vonmises_distr(kappa = 5))
+                
+op <- par(mfrow = c(1, 2))
+rk <- redistribution_kernel(m1, start = make_start(c(0, 0), ta_ = 0), 
+                            landscape = "discrete", tolerance.outside = 0.2,
+                            map = r, as.rast = TRUE, max.dist = 5)
+plot(r, legend = FALSE)
+points(0, 0, cex = 2, pch = 20)
+plot(rk$redistribution.kernel, legend = FALSE)
+```
+
+-----------
+
+Same model, but different starting position. 
+
+```{r, echo = FALSE}
+rk <- redistribution_kernel(m1, start = make_start(c(2, 0), ta_ = 0), 
+                            map = r, as.rast = TRUE, max.dist = 5, 
+                            landscape = "discrete", tolerance.outside = 0.2)
+op <- par(mfrow = c(1, 2))
+plot(r, legend = FALSE)
+points(2, 0, cex = 2, pch = 20)
+plot(rk$redistribution.kernel, legend = FALSE)
+
+```
+
+
+
+## Obtain space use of animals from fitted iSSFs
+
+Different simulation targets: 
+
+1.  An individual path of the animal. 
+2.  Where is the animal next?
+
+Often we are aiming for the **Utilization Distribution** (UD).
+
+The UD is defined as:
+
+> The two-dimensional relative frequency distribution of space use of an
+> animal (Van Winkle 1975)
+
+------------------------------------------------------------------------
+
+We can distinguish between two different types of UDs:
+
+1.  Transient UD (TUD) is the expected space-use distribution over a
+    short time period and is thus sensitive to the initial conditions
+    (e.g., the starting point).
+2.  Steady state UD (SSUD) is the long-term (asymptotically infinite)
+    expectation of the space-use distribution across the landscape.
+
+
+
+## Asses model fit, does it reflect the biology of the animal?
+
+- We can compare the observed track with simulated tracks and visually check if the model captures mechanisms of the observed track. 
+
+\includegraphics<2>[width=\linewidth]{../img/fig_2_3.png}
+
+# How -- Approaches to do simulations
+
+## The redistribution kernel
+
+\begin{equation*}
+\only<1->{\textcolor{blue}{(\mathbf{s}, t + \Delta t)}} \only<2->{|\textcolor{blue!50}{u(\mathbf{s}', t)}} \only<3->= \frac{\only<4->{\textcolor{violet}{w(\mathbf{X}(\mathbf{s});\mathbf{\beta}(\Delta t))}}\only<5->{\textcolor{spamwell}{\phi(\theta(\mathbf{s}, \mathbf{s'}), \gamma(\Delta t))}}}
+{\only<6->{\textcolor{black!40}{\underbrace{\int_{\tilde{\mathbf{s}} \in G} w(\mathbf{X}( \tilde{\mathbf{s}});\mathbf{\beta}(\Delta t))\phi(\theta(\tilde{\mathbf{s}}, \mathbf{s}');\gamma(\Delta t))d\tilde{\mathbf{s}}}_{\text{Normalizing constant}}}}}
+\end{equation*}
+
+We want to model the probability that the animals moves to position
+$\textcolor{blue}{\mathbf{s}}$ at time
+\textcolor{blue}{$t + \Delta t$}\only<2->{, given it is at position $\textcolor{blue!50}{\mathbf{s'}}$ at time $\textcolor{blue!50}{t}$.}
+
+```{=tex}
+\only<3->{The \textbf{redistribution kernel} consists of two components:
+\begin{itemize}
+\item<4-> The movement-free habitat-selection function $\textcolor{violet}{w(\mathbf{X}(\mathbf{s});\mathbf{\beta}(\Delta t))}$
+\item<5-> The selection-free movement kernel $\textcolor{spamwell}{\phi(\theta(\mathbf{s}, \mathbf{s'}), \gamma(\Delta t))}$
+\end{itemize}
+}
+```
+
+## Argumentes to the redistribution kernel
+
+In **amt** there is the function `redistribution_kernel()`, with several arguments (some are discussed here): 
+
+\pause
+
+- `model`: This can be the result of an iSSF fitted to data with the function `fit_issf()` or a model built from scratch with the function `make_issf_model()`. 
+
+```{r}
+library(amt)
+m1 <- make_issf_model(
+  # the selection coefficients
+  coefs = c("x_end" = 1), 
+  # sl distribution
+  sl = make_gamma_distr(shape = 2, scale = 2), 
+  ta = make_unif_distr() # uniform turn angles
+)
+```
+
+---------
+
+- `map`: This is the landscape (with the resources). This needs to be one or more `SpatRast`s from the **terra** package. 
+
+\pause
+
+```{r}
+r1 <- terra::rast(xmin = -20, xmax = 20, 
+                  ymin = -20, ymax = 20, res = 1)
+r1[] <- 1
+r1[ , 1:20] <- 0
+names(r1) <- "x"
+```
+
+\pause
+
+- `function`: This a function that is executed at each time step. Often the default (`function(xy, map) { extract_covariates(xy, map, where = "both")}`) is sufficient and no modifications are needed. 
+
+-----
+
+- `max.dist`: This is the distance at which redistribution kernel is truncated. By default this is the 0.99 quantile of the step length distribution. 
+
+\pause 
+
+- `start`: The start position and start direction. 
+
+\pause
+
+```{r}
+start <- make_start(c(0, 0), ta_ = 0)
+```
+
+
+
+## Representation of space
+
+We implemented two ways to represent space: 
+
+1. **Discrete space:** each pixel in the redistribution kernel up to the truncation distance is potentially available. Correction for the tentative movement parameter estimates of the movement kernel and the transformation from polar to Euclidean coordinates are needed. 
+\pause
+2. **Continuous space:** a large number of points are sampled under the tentative movement kernel. 
+
+
+--------
+
+```{r, fig.width=2, dpi = 600}
+library(amt)
+rdk1 <- redistribution_kernel(
+  m1, map = r1, 
+  start = start, as.rast = TRUE)
+```
+
+\includegraphics<2>[width=0.5\linewidth]{../img/rdk0.png}
+\includegraphics<3>[width=0.5\linewidth]{../img/rdk1.png}
+
+--------
+
+```{r, fig.width=2, dpi = 600}
+rdk2 <- redistribution_kernel(
+  m1, map = r1, 
+  start = make_start(c(10, 0)), as.rast = TRUE)
+```
+
+\includegraphics<2>[width=0.5\linewidth]{../img/rdk3.png}
+\includegraphics<3>[width=0.5\linewidth]{../img/rdk4.png}
+
+## From the redistribution kernel to a path
+
+
+First we need to create a slightly bigger landscape. 
+
+```{r}
+r <- terra::rast(xmin = -100, xmax = 100, 
+                 ymin = -100, ymax = 100, res = 1)
+r[] <- 0
+r[50:100, ] <- 1
+names(r) <- "x"
+```
+
+-------
+
+Then we have to specify the redistribution kernel again
+
+```{r}
+# Start
+start <- make_start(c(0, 0), ta_ = pi/2)
+
+# Model
+m <- make_issf_model(
+  coefs = c(x_end = 2), 
+  sl = make_gamma_distr(shape = 2, scale = 2), 
+  ta = make_vonmises_distr(kappa = 1))
+
+# Redistribution kernel
+rdk.1a <- redistribution_kernel(
+  m, start = start, map = r, 
+  stochastic = TRUE, max.dist = 5, 
+  n.control = 1e4)
+```
+
+-------
+
+And now we simulate 15 steps from this redistribution kernel:
+
+```{r}
+p1 <- simulate_path(rdk.1a, n.steps = 20, start = start)
+```
+
+\pause
+
+```{r, fig.height=2}
+ggplot(p1, aes(x_, y_)) + geom_path() + coord_equal()
+```
+
+
+--------------
+
+But this is just one realization, lets repeat this for $n = 50$ animals: 
+
+
+```{r}
+n <- 50
+system.time(p1 <- replicate(
+  n, simulate_path(rdk.1a, n = 15, 
+                   start = start), 
+  simplify = FALSE))
+```
+
+
+-------------------
+
+Individual paths of 50 simulated animals
+
+```{r, echo = FALSE}
+# Plot 1
+tibble(
+  rep = 1:n, 
+  path = p1
+) |> unnest(cols = path) |> 
+  ggplot(aes(x_, y_, group = rep)) + geom_path(alpha = 0.1) +
+  coord_equal()
+```
+
+## From a redistribution kernel to a map
+
+
+```{r, echo = FALSE, fig.height=3}
+map(p1, ~ mutate(.x, ts = row_number())) |> 
+  bind_rows() |> 
+  filter(ts %in% c(2, 5, 10, 15)) |> 
+  ggplot(aes(x_, y_)) + geom_point(alpha = .1) + 
+  facet_wrap(~ ts) + coord_equal()
+```
+
+-------
+
+```{r, echo = FALSE, fig.height=3}
+trks <- lapply(c(2, 5, 10, 15), function(i) {
+  tibble(
+    rep = 1:n, 
+    path = map(p1, ~ dplyr::slice(.x, i))
+  ) |> unnest(cols = path) |> 
+    make_track(x_, y_) |> hr_kde(trast = r)
+})
+plts <- terra::rast(lapply(trks, hr_ud))
+names(plts) <- paste("n =", c("2", "5", "10", "15"))
+terra::plot(plts)
+
+
+```
+
+
+# Case Study
+
+## African Buffalo
+
+To illustrate the use of simulation, we fitted an iSSF to tracking data
+of a single African buffalo\footnotemark\textsuperscript{,}\footnotemark.
+
+\only<2->{We fitted three different models using \texttt{amt}: }
+
+```{=tex}
+\begin{enumerate}
+\item<3-> \textbf{Base model}: \texttt{case\_ \~{} cos(ta\_) + sl\_ + log(sl\_) + water\_dist\_end}
+\item<4-> \textbf{Home-range model}: \texttt{case\_ \~{} cos(ta\_) + sl\_ + log(sl\_) + water\_dist\_end + \textcolor{spamwell}{x2\_ + y2\_ + I(x2\_\^{}2 + y2\_\^{}2)}}
+\item<5-> \textbf{River model}: \texttt{case\_  \~{} cos(ta\_) + sl\_ + log(sl\_) + water\_dist\_end + x2\_ + y2\_ + I(x2\_\^{}2 + y2\_\^{}2) + \textcolor{spamwell}{I(water\_crossed\_end != water\_crossed\_start)}}
+\end{enumerate}
+```
+```{=tex}
+\footnotetext[1]{For details of the data see: Getz et al. 2007 LoCoH: Nonparameteric kernel methods for constructing home ranges and utilization distributions. PLoS ONE}
+\footnotetext[2]{Cross et al. 2016. Data from: Nonparameteric kernel methods for constructing home ranges and utilization distributions. Movebank Data Repository. DOI:10.5441/001/1.j900f88t.}
+```
+
+------------------------------------------------------------------------
+
+```{=tex}
+\only<1>{\textbf{The setting}}
+\only<2>{\textbf{The observed track}}
+\only<3>{\textbf{Base model}: \texttt{case\_ \~{} cos(ta\_) + sl\_ + log(sl\_) + water\_dist\_end}}
+\only<4>{\textbf{Home-range model}: \texttt{case\_ \~{} cos(ta\_) + sl\_ + log(sl\_) + water\_dist\_end + \textcolor{spamwell}{x2\_ + y2\_ + I(x2\_\^{}2 + y2\_\^{}2)}}}
+\only<5>{\textbf{River model}: \texttt{case\_  \~{} cos(ta\_) + sl\_ + log(sl\_) + water\_dist\_end + x2\_ + y2\_ + I(x2\_\^{}2 + y2\_\^{}2) + \textcolor{spamwell}{I(water\_crossed\_end != water\_crossed\_start)}}}
+```
+\vfill
+
+\includegraphics<1>[width=\linewidth]{../img/fig_2_1.png}
+\includegraphics<2>[width=\linewidth]{../img/fig_2_2.png}
+\includegraphics<3>[width=\linewidth]{../img/fig_2_3.png}
+\includegraphics<4>[width=\linewidth]{../img/fig_2_4.png}
+\includegraphics<5>[width=\linewidth]{../img/fig_2_5.png}
+
+## More applications
+
+\includegraphics<1>[width=\linewidth]{img/hofmann1.png}
+\includegraphics<2>[width=\linewidth]{img/hofmann2.png}
+\includegraphics<3>[width=\linewidth]{img/hofmann3.png}
+\includegraphics<4>[width=\linewidth]{img/cervantes1.png}
+\includegraphics<5>[width=\linewidth]{img/aiello1.png}
+
+
+## References
+
+\footnotesize
+
+- Avgar, T., Potts, J. R., Lewis, M. A., & Boyce, M. S. (2016). Integrated step selection analysis: bridging the gap between resource selection and animal movement. Methods in Ecology and Evolution, 7(5), 619-630.
+- Potts, J. R., & Börger, L. (2023). How to scale up from animal movement decisions to spatiotemporal patterns: An approach via step selection. Journal of Animal Ecology, 92(1), 16-29.
+- Potts, J. R., & Schlägel, U. E. (2020). Parametrizing diffusion‐taxis equations from animal movement trajectories using step selection analysis. Methods in Ecology and Evolution, 11(9), 1092-1105.
+- Signer, J., Fieberg, J., & Avgar, T. (2017). Estimating utilization distributions from fitted step‐selection functions. Ecosphere, 8(4), e01771.
+- Signer, J., Fieberg, J., Reineking, B., Schlaegel, U., Smith, B., Balkenhol, N., & Avgar, T. (2023). Simulating animal space use from fitted integrated Step‐Selection Functions (iSSF). Methods in Ecology and Evolution.

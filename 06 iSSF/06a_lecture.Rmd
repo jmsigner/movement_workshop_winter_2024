@@ -180,7 +180,7 @@ tidy(m1$model)
 \pause
 
 - `forest` indicates if the end of a step is located inside a forest or not.
-- $\exp(\beta_1) = \exp(0.302) = 1.35$. This indicates that it is 1.35 times more probably for a step to end in a forest patch than in a non-forest patch. 
+- $\exp(\beta_1) = \exp(0.56) = 1.75$. This indicates that it is 1.35 times more probably for a step to end in a forest patch than in a non-forest patch. 
 
 
 # Take-home points

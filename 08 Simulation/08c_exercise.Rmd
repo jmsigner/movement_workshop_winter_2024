@@ -1,0 +1,20 @@
+---
+title: "Simulating from fittes iSSFs"
+author: "Johannes Signer"
+date: "January 2024"
+output: 
+  html_document:
+    theme: null
+    css: "../css/exercises.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Let's apply what we've learned about simulating from fitted iSSFs. 
+
+## Instructions
+
+In the second part of the code walkthrough, we simulated trajectories from scratch (i.e., without fitting a model before). Repeat this, but now with a selection of 0 for $x$. Simulate 50 trajectories and smooth the locations of these trajectories after 5, 10 and 15 steps. In crease the realism of this by adding a random starting direction. 

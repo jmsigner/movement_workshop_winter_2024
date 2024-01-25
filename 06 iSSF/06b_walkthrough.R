@@ -45,7 +45,7 @@ ele <- rast(NLMR::nlm_gaussianfield(dim, dim))
 ele[] <- scales::rescale(ele[], c(0, 500))
 plot(ele)
 
-# Finally, we create a raster stack and give the layers a meaningful name.
+# Finally, we create a stack and give the layers a meaningful name.
 covars <- c(forest, ele)
 names(covars)
 names(covars) <- c("forest", "elevation")
