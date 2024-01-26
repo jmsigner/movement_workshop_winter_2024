@@ -44,7 +44,6 @@ rdk.1a <- redistribution_kernel(
   n.control = 1e4)
 
 
-
 # Now simulate one path (i.e. one animal)
 p1 <- simulate_path(rdk.1a, n.steps = 20, start = start)
 plot(r)
@@ -171,7 +170,7 @@ plot(k1$redistribution.kernel)
 # There are a number of options that can be set here: 
 # See table 1 here: https://besjournals.onlinelibrary.wiley.com/doi/10.1111/2041-210X.14263
 k1 <- redistribution_kernel(m_0, map = env, start = start,
-                            landscape = "continuous", tolerance.outside = 0.2, as.rast = FALSE, 
+                            landscape = "continuous", tolerance.outside = 0.2, 
                             n.control = 1e3)
 # Or we could draw 1000 100 steps 
 k1 <- redistribution_kernel(m_0, map = env, start = start,
@@ -213,7 +212,7 @@ summary(m_1)
 k2 <- redistribution_kernel(m_1, map = env, start = make_start(ssf_cilla[1, ]),
                             tolerance.outside = 0.01, as.rast = FALSE, n.sample = 100, 
                             n.control = 1e3)
-s2 <- simulate_path(k2, n.steps = 200)
+s2 <- simulate_path(k2, n.steps = 500)
 
 raster::plot(env[["elev"]])
 lines(cilla$x_, cilla$y_)
@@ -246,6 +245,7 @@ ww[ww == 3] <- 2
 
 # And give the new layer a meaningful name and add it to the raster stack.
 names(ww) <- "water_crossed"
+
 env1 <- c(ww, crop(env, ww))
 
 # We have to extract the covariates again, to also have the side of the river,
@@ -287,6 +287,8 @@ s3 <- simulate_path(k3, n.steps = 500)
 plot(env1[["water_crossed"]])
 lines(cilla$x_, cilla$y_)
 lines(s3$x_, s3$y_, col = "red")
+
+
 
 # More complex model ---- 
 # The function `redistribution_kernel()` has a further argument that is called

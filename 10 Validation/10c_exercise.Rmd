@@ -1,0 +1,37 @@
+---
+title: "Validation Exercise"
+author: "Brian J. Smith"
+date: "17 March 2023"
+output: 
+  html_document:
+    theme: default
+    css: "../css/exercises.css"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+<br>
+
+Let's apply what we've learned about model validation. Refer to the lecture slides (<a href="10a_lecture.html" target="_blank" rel="noopener noreferrer">10a_lecture.html</a>) and the walkthrough code (`10b_walkthrough.R`) as a refresher.
+
+Pick a model you fit in a previous exercise, such as an HSF from exercise 5 or an iSSF from exercises 6-8.
+
+## Instructions
+
+1. Start with the script from the previous exercise of your choice.
+
+2. Separate your data into training and testing data.
+
+3. Fit two models to your training data. 
+
+  * The first model can be the one you already fit in the previous exercise.
+  * Leave out a variable you think should be important from the second model.
+  
+4. Create UHC plots for both models. Can you see where the UHC plots are telling you that your model is misspecified?
+
+<br>
+<hr>
+<br>
+
