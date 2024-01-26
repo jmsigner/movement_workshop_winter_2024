@@ -36,7 +36,7 @@ What to do, if we
 - have irregular sampling rates
 - want to account for non-linear relationships
 - want to account for spatial autocorrelation in covariates
-- ...‚
+- ...
 
 # Multiple individuals
 
