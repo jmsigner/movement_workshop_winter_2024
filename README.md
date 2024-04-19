@@ -3,7 +3,7 @@
 ## Tentative schedule
 
 - When: 22nd to 26th of January 2024
-- Where: online
+- Where: online with Zoom
 
 ## Program
 
